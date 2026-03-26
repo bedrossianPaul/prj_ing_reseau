@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from Simu.interfaces.Node import Node
 
 class Network(ABC):
     """
@@ -6,14 +7,14 @@ class Network(ABC):
     """
 
     @abstractmethod
-    def tick(self):
+    def tick(self) -> None:
         """
         Advances the simulation by one time step. This method should update the positions of the nodes and handle any communication between them.
         """
         pass
 
     @abstractmethod
-    def getNodesInRange(self, node, range):
+    def get_nodes_in_range(self, node : Node, range : float) -> list[Node]:
         """
         Returns a list of nodes that are within a certain range of the given node.
 

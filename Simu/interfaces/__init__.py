@@ -1,0 +1,1 @@
+# Rend le dossier interfaces importable comme sous-package

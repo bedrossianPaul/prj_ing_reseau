@@ -6,21 +6,21 @@ class Node(ABC):
     """
 
     @abstractmethod
-    def getID(self):
+    def get_id(self) -> int:
         """
         Returns the ID of the node.
         """
         pass
 
     @abstractmethod
-    def getPosition(self):
+    def get_position(self) -> tuple:
         """
         Returns the position of the node as a tuple (x, y, z).
         """
         pass
 
     @abstractmethod
-    def setPosition(self, position):
+    def set_position(self, position : tuple) -> None:
         """
         Sets the position of the node.
 
@@ -30,5 +30,5 @@ class Node(ABC):
         pass
     
     @abstractmethod
-    def __str__(self):
+    def __str__(self) -> str:
         pass
