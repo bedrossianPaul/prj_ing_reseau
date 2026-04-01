@@ -1,6 +1,7 @@
 from pandas import read_csv
 import numpy as np
 import os
+import pickle
 import argparse
 
 from Simu.impl.Constellation import Constellation
@@ -23,13 +24,15 @@ def main():
 
     COMM_RANGE = 1000 * args.comm  # portée en mètres
     METRICS_FILE = f"resilience_metrics_{args.comm:.1f}km.npz"
+    CONST_FILE = f"constellation_{args.comm:.1f}km.pkl"
 
-    if os.path.exists(METRICS_FILE):
-        print("Chargement des métriques depuis le fichier...")
-        data = np.load(METRICS_FILE, allow_pickle=True)
-        metrics = {k: data[k].tolist() for k in data}
+    if os.path.exists(CONST_FILE):
+        print("Chargement de la constellation depuis le fichier...")
+        with open(CONST_FILE, "rb") as f:
+            constellation = pickle.load(f)
+        
     else:
-        print("Calcul des métriques de résilience...")
+        print("Calcul de la constellation...")
         source_path = "/home/paul/Documents/Travail/N7/S8/prj_ing_reseau/Simu/Traces.csv"
         df = read_csv(source_path, header=None)
 
@@ -52,6 +55,18 @@ def main():
         # Création des nanosatellites
         nodes = [NanosSatellite(id=node, position=positionsArray[node][0], router=None) for node in range(n_nodes)]
         constellation = Constellation(nodes, positionsArray)
+
+        # Sauvegarde de la constellation dans un fichier avec pickle
+        with open(CONST_FILE, "wb") as f:
+            pickle.dump(constellation, f)
+        
+    if os.path.exists(METRICS_FILE):
+        print("Chargement des métriques depuis le fichier...")
+        data = np.load(METRICS_FILE, allow_pickle=True)
+        metrics = {k: data[k].tolist() for k in data}
+    else:
+        print("Calcul des métriques de résilience...")
+        
         metrics = resilience_metrics_over_time(positionsArray, COMM_RANGE)
         np.savez_compressed(
             METRICS_FILE,
