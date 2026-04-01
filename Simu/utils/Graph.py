@@ -1,4 +1,3 @@
-
 # Affichage graphique de la trajectoire du nanosatellite 0
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -69,4 +68,83 @@ def plot_constellation(constellation: Network, range: int) -> None:
     ax.set_zlabel('Z')
     ax.set_title('Constellation - positions courantes des nodes')
     ax.legend()
+    plt.show()
+
+def plot_resilience_metrics(metrics: dict, comm_range_m: float) -> None:
+    """
+    Affiche les courbes du degré moyen et de la longueur de chemin moyen au cours du temps.
+    metrics : dict retourné par resilience_metrics_over_time
+    comm_range_m : portée de communication en mètres (pour le titre)
+    """
+    steps = list(range(len(metrics['avg_degree'])))
+    import numpy as np
+    import matplotlib.pyplot as plt
+    fig, axs = plt.subplots(4, 2, figsize=(16, 16))
+    axs = axs.flatten()
+
+    # 1. Degré moyen
+    axs[0].plot(steps, metrics['avg_degree'], color='tab:orange')
+    axs[0].set_title('Degré moyen')
+    axs[0].set_xlabel('Etape de temps')
+    axs[0].set_ylabel('Degré')
+
+    # 2. Densité du graphe
+    axs[1].plot(steps, metrics['density'], color='tab:blue')
+    axs[1].set_title('Densité du graphe')
+    axs[1].set_xlabel('Etape de temps')
+    axs[1].set_ylabel('Densité')
+
+    # 3. Connexité
+    axs[2].plot(steps, [int(c) for c in metrics['connected']], color='tab:green')
+    axs[2].set_title('Connexité (1=Oui, 0=Non)')
+    axs[2].set_xlabel('Etape de temps')
+    axs[2].set_ylabel('Connexité')
+    axs[2].set_ylim(-0.1, 1.1)
+
+    # 4. Longueur moyenne des chemins
+    axs[3].plot(steps, metrics['avg_path_length'], color='tab:red')
+    axs[3].set_title('Longueur moyenne des plus courts chemins')
+    axs[3].set_xlabel('Etape de temps')
+    axs[3].set_ylabel('Longueur')
+
+    # 5. Diamètre temporel
+    axs[4].plot(steps, metrics['diameter'], color='tab:purple')
+    axs[4].set_title('Diamètre temporel du réseau')
+    axs[4].set_xlabel('Etape de temps')
+    axs[4].set_ylabel('Diamètre')
+
+    # 6. Stabilité des noeuds
+    axs[5].plot(steps, metrics['stability'], color='tab:brown')
+    axs[5].set_title('Stabilité moyenne des noeuds')
+    axs[5].set_xlabel('Etape de temps')
+    axs[5].set_ylabel('Stabilité')
+    axs[5].set_ylim(0, 1.05)
+
+    # 7. Distribution des degrés (heatmap)
+    degrees = np.array(metrics['degrees'])  # shape (n_steps, n_nodes)
+    im = axs[6].imshow(degrees.T, aspect='auto', cmap='viridis', origin='lower')
+    axs[6].set_title('Distribution des degrés (noeuds x temps)')
+    axs[6].set_xlabel('Etape de temps')
+    axs[6].set_ylabel('Noeud')
+    fig.colorbar(im, ax=axs[6], orientation='vertical', label='Degré')
+
+    # 8. Distribution des longueurs de chemins (heatmap)
+    # On construit une matrice (temps x bins) pour la heatmap
+    max_bin = 1
+    for hist, bins in metrics['path_length_hist']:
+        if len(bins) > 1:
+            max_bin = max(max_bin, int(bins[-1]))
+    path_hist_matrix = np.zeros((len(steps), max_bin))
+    for t, (hist, bins) in enumerate(metrics['path_length_hist']):
+        for i, h in enumerate(hist):
+            if i < max_bin:
+                path_hist_matrix[t, i] = h
+    im2 = axs[7].imshow(path_hist_matrix.T, aspect='auto', cmap='magma', origin='lower')
+    axs[7].set_title('Distribution des longueurs de chemins')
+    axs[7].set_xlabel('Etape de temps')
+    axs[7].set_ylabel('Longueur')
+    fig.colorbar(im2, ax=axs[7], orientation='vertical', label='Nombre de chemins')
+
+    plt.suptitle(f"Métriques de résilience de la constellation (portée {comm_range_m/1000:.1f} km)", fontsize=18)
+    plt.tight_layout(rect=[0, 0.03, 1, 0.97])
     plt.show()
