@@ -12,22 +12,22 @@ class EpidemicImp(Router):
         # Car c'est une diffusion massive : chaque rencontre permet un échange potentiel
         return nodeInRange
 
-    def add_bundle(self, bundle_id: str):
-        # Ajoute un bundle à ce nœud (simule la réception d'un message)
-        self.bundles.add(bundle_id)
+    # def add_bundle(self, bundle_id: str):
+    #     # Ajoute un bundle à ce nœud (simule la réception d'un message)
+    #     self.bundles.add(bundle_id)
 
-    def get_bundles(self) -> set:
-        # Retourne les bundles que ce nœud possède
-        return self.bundles.copy()
+    # def get_bundles(self) -> set:
+    #     # Retourne les bundles que ce nœud possède
+    #     return self.bundles.copy()
 
-    def exchange_bundles(self, other_router: 'EpidemicImp'):
-        # Simule l'échange Epidemic : on copie les bundles que l'autre n'a pas
-        # C'est le cœur de l'algorithme : à chaque rencontre, échange des bundles non vus
-        new_for_me = other_router.bundles - self.bundles
-        new_for_other = self.bundles - other_router.bundles
+    # def exchange_bundles(self, other_router: 'EpidemicImp'):
+    #     # Simule l'échange Epidemic : on copie les bundles que l'autre n'a pas
+    #     # C'est le cœur de l'algorithme : à chaque rencontre, échange des bundles non vus
+    #     new_for_me = other_router.bundles - self.bundles
+    #     new_for_other = self.bundles - other_router.bundles
         
-        self.bundles.update(new_for_me)
-        other_router.bundles.update(new_for_other)
+    #     self.bundles.update(new_for_me)
+    #     other_router.bundles.update(new_for_other)
 
     def __str__(self) -> str:
         return f"Epidemic Router with {len(self.bundles)} bundles"

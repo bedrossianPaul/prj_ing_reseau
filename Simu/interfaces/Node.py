@@ -20,12 +20,36 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def consume_battery(self, amount : float) -> None:
+    def send_message(self) -> None:
         """
-        Consumes a certain amount of battery from the node.
+        Simulates sending a message from this node. This should consume battery.
+        """
+        pass
+
+    @abstractmethod
+    def receive_message(self, message : str) -> None:
+        """
+        Simulates receiving a message at this node.
 
         Arguments:
-        amount - float representing the percentage of battery to consume (e.g., 10.0 for 10%)
+        message - the message being received (type: str)
+        """
+        pass
+
+    @abstractmethod
+    def queue_message(self, message : str) -> None:
+        """
+        Queues a message to be sent later.
+
+        Arguments:
+        message - the message to be queued (type: str)
+        """
+        pass
+
+    @abstractmethod
+    def get_router(self) -> object:
+        """
+        Returns the router associated with this node.
         """
         pass
 
