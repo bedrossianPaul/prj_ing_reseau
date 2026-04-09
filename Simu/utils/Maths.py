@@ -101,6 +101,9 @@ def resilience_metrics_over_time(positionsArray, comm_range):
     path_lengths = []
     stability = []
     prev_neighbors = None
+    # Pour les contacts : matrice (n_nodes, n_nodes) de listes de durées
+    contact_durations = [[[] for _ in range(n_nodes)] for _ in range(n_nodes)]
+    contact_active = np.zeros((n_nodes, n_nodes), dtype=int)  # 0: pas de contact, >0: durée en cours
     try:
         from tqdm import tqdm
         iterator = tqdm(range(n_steps), desc="Calcul résilience")
@@ -127,6 +130,34 @@ def resilience_metrics_over_time(positionsArray, comm_range):
         else:
             stability.append(1.0)
         prev_neighbors = curr_neighbors
+        # Calcul des durées de contact
+        for i in range(n_nodes):
+            for j in range(i+1, n_nodes):
+                if adj[i, j]:
+                    contact_active[i, j] += 1
+                else:
+                    if contact_active[i, j] > 0:
+                        contact_durations[i][j].append(contact_active[i, j])
+                        contact_durations[j][i].append(contact_active[i, j])  # symétrique
+                        contact_active[i, j] = 0
+        # À la dernière étape, on clôture les contacts restants
+    for i in range(n_nodes):
+        for j in range(i+1, n_nodes):
+            if contact_active[i, j] > 0:
+                contact_durations[i][j].append(contact_active[i, j])
+                contact_durations[j][i].append(contact_active[i, j])
+    # On rassemble toutes les durées de contact dans une seule liste pour stats globales
+    all_contact_durations = []
+    for i in range(n_nodes):
+        for j in range(i+1, n_nodes):
+            all_contact_durations.extend(contact_durations[i][j])
+    # Calcul de la durée moyenne des contacts
+    if all_contact_durations:
+        mean_contact_duration = np.mean(all_contact_durations)
+        contact_duration_hist, contact_duration_bins = np.histogram(all_contact_durations, bins='auto')
+    else:
+        mean_contact_duration = 0.0
+        contact_duration_hist, contact_duration_bins = np.array([]), np.array([])
     return {
         'degrees': degrees,
         'avg_degree': avg_degree,
@@ -136,5 +167,9 @@ def resilience_metrics_over_time(positionsArray, comm_range):
         'path_length_hist': path_length_hist,
         'diameter': diameter,
         'path_lengths': path_lengths,
-        'stability': stability
+        'stability': stability,
+        'contact_durations': contact_durations,  # matrice n*n de listes
+        'all_contact_durations': all_contact_durations,  # liste globale
+        'mean_contact_duration': mean_contact_duration,
+        'contact_duration_hist': (contact_duration_hist, contact_duration_bins)
     }

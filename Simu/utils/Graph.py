@@ -79,7 +79,7 @@ def plot_resilience_metrics(metrics: dict, comm_range_m: float) -> None:
     steps = list(range(len(metrics['avg_degree'])))
     import numpy as np
     import matplotlib.pyplot as plt
-    fig, axs = plt.subplots(4, 2, figsize=(16, 16))
+    fig, axs = plt.subplots(5, 2, figsize=(18, 20))
     axs = axs.flatten()
 
     # 1. Degré moyen
@@ -144,6 +144,21 @@ def plot_resilience_metrics(metrics: dict, comm_range_m: float) -> None:
     axs[7].set_xlabel('Etape de temps')
     axs[7].set_ylabel('Longueur')
     fig.colorbar(im2, ax=axs[7], orientation='vertical', label='Nombre de chemins')
+
+    # 9. Durée moyenne des contacts
+    axs[8].bar([0], [metrics.get('mean_contact_duration', 0)], color='tab:cyan')
+    axs[8].set_title('Durée moyenne des contacts')
+    axs[8].set_xticks([0])
+    axs[8].set_xticklabels(['Durée moyenne'])
+    axs[8].set_ylabel('Nombre d\'étapes')
+
+    # 10. Distribution des durées de contact
+    hist, bins = metrics.get('contact_duration_hist', ([], []))
+    if len(hist) > 0 and len(bins) > 1:
+        axs[9].bar(bins[:-1], hist, width=np.diff(bins), align='edge', color='tab:pink', edgecolor='black')
+    axs[9].set_title('Distribution des durées de contact')
+    axs[9].set_xlabel('Durée (étapes)')
+    axs[9].set_ylabel('Nombre de contacts')
 
     plt.suptitle(f"Métriques de résilience de la constellation (portée {comm_range_m/1000:.1f} km)", fontsize=18)
     plt.tight_layout(rect=[0, 0.03, 1, 0.97])
