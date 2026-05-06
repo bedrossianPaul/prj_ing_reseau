@@ -107,6 +107,8 @@ def main():
     node0 = constellation.nodes[0]
     node0.queue_message("MSG_1")
     message_propagation = [0] 
+    disabled_per_step = [0]
+    disabled_cumulative = [0]
 
     try:
         from tqdm import tqdm
@@ -116,25 +118,46 @@ def main():
 
     for t in iterator:
         constellation.tick()
+        step_disabled = 0
 
         for node in constellation.nodes:
             if node.receivedMessages and node.receivedMessages[-1] not in node.queuedMessages:
                 node.queue_message(node.receivedMessages[-1])  # Queue the last received message for sending
             if node.queuedMessages:
                 node.send_message()
-                inRange = constellation.get_nodes_in_range(node, COMM_RANGE)
+                (inRange, count_disabled) = constellation.get_nodes_in_ranges_2(node, COMM_RANGE, 0.01)
+                step_disabled += count_disabled
                 neighbors = node.get_router().routing(inRange)
                 for neighbor in neighbors:
                     neighbor.receive_message(node.queuedMessages[0])
 
         count = sum(1 for node in constellation.nodes if "MSG_1" in node.receivedMessages)
         message_propagation.append(count)
+        disabled_per_step.append(step_disabled)
+        disabled_cumulative.append(disabled_cumulative[-1] + step_disabled)
         
     import matplotlib.pyplot as plt
-    plt.plot(range(len(message_propagation)), message_propagation, marker='o')
-    plt.title(f"Propagation du message MSG_1 dans la constellation (routage: {ROUTER_TYPE}, portée: {args.comm:.1f} km)")
+    fig, ax1 = plt.subplots()
+    ax1.plot(range(len(message_propagation)), message_propagation, marker='o', label='Propagation MSG_1')
+    ax1.set_title(f"Propagation du message MSG_1 dans la constellation (routage: {ROUTER_TYPE}, portée: {args.comm:.1f} km)")
+    ax1.set_xlabel("Etape de temps")
+    ax1.set_ylabel("Nombre de nœuds ayant reçu le message")
+    ax1.grid()
+
+    ax2 = ax1.twinx()
+    ax2.bar(range(len(disabled_per_step)), disabled_per_step, alpha=0.3, color='orange', label='Communications désactivées (pas)')
+    ax2.set_ylabel("Nb comm. désactivées (pas de temps)")
+
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+    plt.show()
+
+    plt.figure()
+    plt.plot(range(len(disabled_cumulative)), disabled_cumulative, marker='o', color='r')
+    plt.title(f"Nombre cumulé de communications désactivées (routage: {ROUTER_TYPE}, portée: {args.comm:.1f} km)")
     plt.xlabel("Etape de temps")
-    plt.ylabel("Nombre de nœuds ayant reçu le message")
+    plt.ylabel("Count_disabled cumulé")
     plt.grid()
     plt.show()
 

@@ -9,6 +9,7 @@ class Constellation(Network):
         self.nodes = nodes
         self.time = 0
         self.positionsArray = positions
+        
 
     def tick(self) -> None:
         self.time += 1
@@ -25,11 +26,14 @@ class Constellation(Network):
                     nodesInRange.append(otherNode)
         return nodesInRange
     
-    def get_nodes_in_ranges_2(self, node : Node, range : float , prob : float) -> list[Node]:
+    def get_nodes_in_ranges_2(self, node : Node, range : float , prob : float) -> (list[Node] | int):
         nodesInRange = []
+        count_disabled = 0
         for otherNode in self.nodes:
             if otherNode.get_id() != node.get_id():
                 if distance(node.get_position(), otherNode.get_position()) <= range:
-                    nodesInRange.append(otherNode)
-        indices_a_garder = [i for i in range(len(nodesInRange)) if random.random() > prob]
-        return [nodesInRange[i] for i in indices_a_garder]
+                    if (random.random() > prob):  # Simulate probabilistic communication success
+                        nodesInRange.append(otherNode)
+                    else:
+                        count_disabled += 1
+        return (nodesInRange, count_disabled)
