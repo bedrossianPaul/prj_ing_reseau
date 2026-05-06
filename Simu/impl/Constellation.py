@@ -2,6 +2,7 @@ from Simu.interfaces.Network import Network
 from Simu.interfaces.Node import Node
 from Simu.interfaces.Position import Position
 from Simu.utils.Maths import distance
+import random 
 
 class Constellation(Network):
     def __init__(self, nodes : list[Node], positions : list[Position]) -> None:
@@ -23,3 +24,12 @@ class Constellation(Network):
                 if distance(node.get_position(), otherNode.get_position()) <= range:
                     nodesInRange.append(otherNode)
         return nodesInRange
+    
+    def get_nodes_in_ranges(self, node : Node, range : float , prob : float) -> list[Node]:
+        nodesInRange = []
+        for otherNode in self.nodes:
+            if otherNode.get_id() != node.get_id():
+                if distance(node.get_position(), otherNode.get_position()) <= range:
+                    nodesInRange.append(otherNode)
+        indices_a_garder = [i for i in range(len(nodesInRange)) if random.random() > prob]
+        return [nodesInRange[i] for i in indices_a_garder]
