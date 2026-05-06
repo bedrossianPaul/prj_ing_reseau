@@ -8,6 +8,7 @@ from Simu.impl.Constellation import Constellation
 from Simu.impl.NanoSatellite import NanosSatellite
 from Simu.impl.PositionImpl import PositionImpl
 from Simu.impl.EpidemicImp import EpidemicImp
+from Simu.impl.SprayAndWaitImp import SprayAndWaitImp
 import importlib
 
 from Simu.interfaces.Network import Network
@@ -62,15 +63,11 @@ def main():
         # Switch-case sur le type de routage
         if ROUTER_TYPE == "epidemic":
             router = EpidemicImp()
+        elif ROUTER_TYPE == "sprayandwait":
+            router = SprayAndWaitImp()
         else:
-            # Permet d'ajouter d'autres routeurs facilement
-            try:
-                router_module = importlib.import_module(f"Simu.impl.{ROUTER_TYPE.capitalize()}Router")
-                router_class = getattr(router_module, f"{ROUTER_TYPE.capitalize()}Router")
-                router = router_class()
-            except Exception as e:
-                print(f"Type de routage inconnu : {ROUTER_TYPE}. Erreur : {e}")
-                return
+            print(f"Type de routage inconnu : {ROUTER_TYPE}.")
+            return
 
         nodes = [NanosSatellite(id=node, position=positionsArray[node][0], router=router) for node in range(n_nodes)]
         constellation = Constellation(nodes, positionsArray)
