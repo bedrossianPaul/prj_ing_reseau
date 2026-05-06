@@ -25,7 +25,7 @@ class Constellation(Network):
                     nodesInRange.append(otherNode)
         return nodesInRange
     
-    def get_nodes_in_ranges(self, node : Node, range : float , prob : float) -> list[Node]:
+    def get_nodes_in_ranges_2(self, node : Node, range : float , prob : float) -> list[Node]:
         nodesInRange = []
         for otherNode in self.nodes:
             if otherNode.get_id() != node.get_id():
