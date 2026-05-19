@@ -9,6 +9,7 @@ from Simu.impl.NanoSatellite import NanosSatellite
 from Simu.impl.PositionImpl import PositionImpl
 from Simu.impl.EpidemicImp import EpidemicImp
 from Simu.impl.SprayAndWaitImp import SprayAndWaitImp
+from Simu.impl.ProphetImpl import ProphetImpl
 import importlib
 
 from Simu.interfaces.Network import Network
@@ -41,7 +42,7 @@ def main():
         n_steps = len(positionsArray[0])
     else:
         print("Calcul de la constellation...")
-        source_path = "/home/paul/Documents/Travail/N7/S8/prj_ing_reseau/Simu/Traces.csv"
+        source_path = "/home/marouane/prj_ing_reseau/Simu/Traces.csv"
         df = read_csv(source_path, header=None)
 
         arr = df.values
@@ -65,6 +66,8 @@ def main():
             router = EpidemicImp()
         elif ROUTER_TYPE == "sprayandwait":
             router = SprayAndWaitImp()
+        elif ROUTER_TYPE == "prophet":
+            router = ProphetImpl()
         else:
             print(f"Type de routage inconnu : {ROUTER_TYPE}.")
             return
@@ -116,6 +119,8 @@ def main():
     except ImportError:
         iterator = range(1, n_steps)
 
+    destination = constellation.nodes[10] # Choix arbitraire d'une destination pour le routage prophet avec destination
+
     for t in iterator:
         constellation.tick()
         step_disabled = 0
@@ -127,7 +132,13 @@ def main():
                 node.send_message()
                 (inRange, count_disabled) = constellation.get_nodes_in_ranges_2(node, COMM_RANGE, 0.01)
                 step_disabled += count_disabled
-                neighbors = node.get_router().routing(inRange)
+                # neighbors = node.get_router().routing(inRange)
+                if ROUTER_TYPE == "prophet":
+                    for neighbor in inRange:
+                        node.get_router().update_on_encounter(node, neighbor, t)
+                    neighbors = node.get_router().routing_with_dest(inRange, destination, node, t)
+                else:
+                    neighbors = node.get_router().routing(inRange)
                 for neighbor in neighbors:
                     neighbor.receive_message(node.queuedMessages[0])
 

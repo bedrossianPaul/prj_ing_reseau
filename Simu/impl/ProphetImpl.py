@@ -53,8 +53,7 @@ class ProphetImpl(Router):
                 new_p = p + (1 - p) * p_src_via * p_via_dest * self.BETA
                 self.proba[src][dest] = max(p, new_p)
 
-    def routing_with_dest(self, nodeInRange: list[Node], destination: Node, 
-                          current: Node, current_tick: int) -> list[Node]:
+    def routing_with_dest(self, nodeInRange: list[Node], destination: Node, current: Node, current_tick: int) -> list[Node]:
         
         c = current.id
         d = destination.id
